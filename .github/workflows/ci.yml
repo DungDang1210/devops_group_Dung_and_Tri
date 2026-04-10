@@ -2,7 +2,7 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ "main", "feature/dockerize-app" ]
+    branches: [ "main", "feature/fail-demo" ]
   pull_request:
     branches: [ "main" ]
 
