@@ -73,8 +73,8 @@ app.post('/api/todos', async (req, res) => {
    try {
       const { title, completed = false } = req.body;
 
-      if (!title) {
-         return res.status(200).json({ error: 'Title is required' });
+      if (!title || title.trim() === '') {
+         return res.status(400).json({ error: 'Title is required' });
       }
 
       const result = await pool.query(
@@ -90,12 +90,51 @@ app.post('/api/todos', async (req, res) => {
 
 // DELETE todo
 app.delete('/api/todos/:id', async (req, res) => {
-   return res.status(404).json({ error: 'Not found' });
+   try {
+      const { id } = req.params;
+
+      const result = await pool.query(
+         'DELETE FROM todos WHERE id = $1 RETURNING *',
+         [id]
+      );
+
+      if (result.rows.length === 0) {
+         return res.status(404).json({ error: 'Todo not found' });
+      }
+
+      res.status(200).json({ message: 'Deleted successfully' });
+   } catch (err) {
+      res.status(500).json({ error: err.message });
+   }
 });
 
 // UPDATE todo
 app.put('/api/todos/:id', async (req, res) => {
-   return res.status(400).json({ error: 'Title cannot be empty' });
+   try {
+      const { id } = req.params;
+      const { title, completed } = req.body;
+
+      if (title !== undefined && title.trim() === '') {
+         return res.status(400).json({ error: 'Title cannot be empty' });
+      }
+
+      const result = await pool.query(
+         `UPDATE todos 
+          SET title = COALESCE($1, title),
+              completed = COALESCE($2, completed)
+          WHERE id = $3
+          RETURNING *`,
+         [title ? title.trim() : null, completed, id]
+      );
+
+      if (result.rows.length === 0) {
+         return res.status(404).json({ error: 'Todo not found' });
+      }
+
+      res.status(200).json(result.rows[0]);
+   } catch (err) {
+      res.status(500).json({ error: err.message });
+   }
 });
 
 const port = process.env.PORT || 8080;
