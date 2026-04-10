@@ -25,3 +25,36 @@
 # ===========================================
 
 # YOUR CODE HERE:
+# --- Stage 1: builder ---
+FROM node:18-alpine AS builder
+
+WORKDIR /app
+
+# Copy package files first for layer caching
+COPY package*.json ./
+
+# Install all dependencies (including devDependencies)
+RUN npm install
+
+# Copy the rest of the backend source code
+COPY . .
+
+# --- Stage 2: production ---
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Copy package files
+COPY --from=builder /app/package*.json ./
+
+# Install only production dependencies
+RUN npm install --only=production
+
+# Copy application code from builder
+COPY --from=builder /app ./
+
+# Backend listens on port 8080
+EXPOSE 8080
+
+# Start the backend
+CMD ["npm", "start"]
