@@ -115,7 +115,7 @@ app.put('/api/todos/:id', async (req, res) => {
       const { title, completed } = req.body;
 
       if (title !== undefined && title.trim() === '') {
-         return res.status(400).json({ error: 'Title cannot be empty' });
+         return res.status(200).json({ error: 'Title cannot be empty' });
       }
 
       const result = await pool.query(
