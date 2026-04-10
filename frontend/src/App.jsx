@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 
-// STUDENT TODO: This API_URL works for local development
-// For Docker, you may need to configure nginx proxy or use container networking
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080';
+// ✅ FIX: dùng env cho Docker
+const API_URL =
+  process.env.REACT_APP_API_URL || "http://localhost:8080";
 
 function App() {
   const [todos, setTodos] = useState([]);
@@ -18,7 +18,7 @@ function App() {
       const data = await res.json();
       setTodos(data);
     } catch (err) {
-      console.error('Fetch error:', err);
+      console.error('❌ Fetch error:', err);
     }
   };
 
@@ -31,17 +31,17 @@ function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ title: newTodo })
       });
+
       setNewTodo('');
       fetchTodos();
     } catch (err) {
-      alert('Failed to add todo');
+      alert('❌ Failed to add todo');
     }
   };
 
   return (
     <div style={{ padding: '20px', maxWidth: '600px', margin: '0 auto' }}>
       <h1>🚀 DevOps Todo App</h1>
-      <p>Demo: Watch UI update LIVE after CI/CD! ✨</p>
 
       <div style={{ marginBottom: '20px' }}>
         <input
@@ -69,16 +69,6 @@ function App() {
           </li>
         ))}
       </ul>
-
-      <div style={{ marginTop: '30px', fontSize: '12px', color: '#666' }}>
-        <p><strong>STUDENT TODO:</strong></p>
-        <ul>
-          <li>Dockerfile (multi-stage)</li>
-          <li>Fix backend validation (broken test)</li>
-          <li>CI/CD pipeline</li>
-          <li>REPORT.md + Slides</li>
-        </ul>
-      </div>
     </div>
   );
 }
