@@ -1,0 +1,65 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ "main", "feature/*" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_DB: mydatabase
+          POSTGRES_USER: myuser
+          POSTGRES_PASSWORD: mypass
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U myuser -d mydatabase"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install backend
+        run: |
+          cd backend
+          npm ci
+
+      - name: Run tests
+        env:
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_NAME: mydatabase
+          DB_USER: myuser
+          DB_PASSWORD: mypass
+          NODE_ENV: test
+        run: |
+          cd backend
+          npm test
+
+  docker-build:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build backend image
+        run: docker build -t devops-backend ./backend
+
+      - name: Build frontend image
+        run: docker build -t devops-frontend ./frontend
