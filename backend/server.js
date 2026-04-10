@@ -72,6 +72,9 @@ app.get('/api/todos', async (req, res) => {
 app.post('/api/todos', async (req, res) => {
    try {
       const { title, completed = false } = req.body;
+      if (!title || typeof title !== 'string' || title.trim() === '') {
+  return res.status(400).json({ error: 'Title is required' });
+}// The validation to check if the title is missing, send the error message and trim the useless whitespace
 
       if (!title || title.trim() === '') {
          return res.status(400).json({ error: 'Title is required' });
