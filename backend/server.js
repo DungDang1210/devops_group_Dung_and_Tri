@@ -114,7 +114,7 @@ app.put('/api/todos/:id', async (req, res) => {
       const { id } = req.params;
       const { title, completed } = req.body;
 
-      if (title !== undefined && title.trim() === '') {
+      if (!title) {
          return res.status(200).json({ error: 'Title cannot be empty' });
       }
 
